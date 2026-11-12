@@ -66,3 +66,12 @@ async def register_attendee(request: RegistrationRequest):
     registrations[registration_id] = registration
     concert["reserved_seats"] += 1
     return registration
+
+
+@app.get("/registrations/{registration_id}")
+async def get_registration(registration_id: int):
+    registration = registrations.get(registration_id)
+    if registration is None:
+        raise HTTPException(status_code=404, detail="Registration not found")
+
+    return registration
