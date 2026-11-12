@@ -1,0 +1,6 @@
+.git/
+.venv/
+mymusic/
+__pycache__/
+*.pyc
+.env
