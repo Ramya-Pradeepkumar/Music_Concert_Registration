@@ -90,3 +90,20 @@ async def cancel_registration(registration_id: int):
         registration["status"] = "cancelled"
 
     return registration
+
+@app.get("/concerts/{concert_id}/seats")
+async def check_seats(concert_id: int):
+    concert = concerts.get(concert_id)
+    if concert is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    total_seats = concert["total_seats"]
+    reserved_seats = concert["reserved_seats"]
+
+    return {
+        "concert_id": concert_id,
+        "session": concert["session"],
+        "total_seats": total_seats,
+        "reserved_seats": reserved_seats,
+        "available_seats": total_seats - reserved_seats,
+    }
