@@ -75,3 +75,18 @@ async def get_registration(registration_id: int):
         raise HTTPException(status_code=404, detail="Registration not found")
 
     return registration
+
+# end point 4
+
+@app.patch("/registrations/{registration_id}/cancel")
+async def cancel_registration(registration_id: int):
+    registration = registrations.get(registration_id)
+    if registration is None:
+        raise HTTPException(status_code=404, detail="Registration not found")
+
+    if registration["status"] == "confirmed":
+        concert = concerts[registration["concert_id"]]
+        concert["reserved_seats"] -= 1
+        registration["status"] = "cancelled"
+
+    return registration
