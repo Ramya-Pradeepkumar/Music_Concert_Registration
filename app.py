@@ -1,5 +1,13 @@
 from fastapi import FastAPI
 
+#
+
+from itertools import count
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+
 app = FastAPI(title="Music Concert Registration API")
 
 concerts = {
@@ -21,3 +29,40 @@ def list_concerts():
         }
         for concert_id, concert in concerts.items()
     ]
+
+#
+
+registrations = {}
+registration_ids = count(1)
+
+
+class RegistrationRequest(BaseModel):
+    attendee_name: str
+    concert_id: int
+
+
+@app.post("/registrations", status_code=201)
+async def register_attendee(request: RegistrationRequest):
+    attendee_name = request.attendee_name.strip()
+    if not attendee_name:
+        raise HTTPException(status_code=422, detail="Attendee name is required")
+
+    concert = concerts.get(request.concert_id)
+    if concert is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    if concert["reserved_seats"] >= concert["total_seats"]:
+        raise HTTPException(status_code=409, detail="No seats available")
+
+    registration_id = next(registration_ids)
+    registration = {
+        "registration_id": registration_id,
+        "attendee_name": attendee_name,
+        "concert_id": request.concert_id,
+        "session": concert["session"],
+        "status": "confirmed",
+    }
+
+    registrations[registration_id] = registration
+    concert["reserved_seats"] += 1
+    return registration
